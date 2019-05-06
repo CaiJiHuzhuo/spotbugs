@@ -1729,6 +1729,13 @@ factory pattern to create these objects.</p>
       ]]>
     </Details>
   </Detector>
+  <Detector class="edu.umd.cs.findbugs.detect.SelectorCloseDetector">
+    <Details>
+      <![CDATA[
+        <p>Selector closes without socket closure.</p>
+      ]]>
+    </Details>
+  </Detector>
   <!--
   **********************************************************************
   BugPatterns
@@ -8611,6 +8618,17 @@ after the call to initLogging, the logger configuration is lost
       </code></pre>
       <p> when array.length == 2, it can pass the condition, and do array[2], 
           which will cause ArrayIndexOutBoundsException.
+      </p>
+      ]]>
+    </Details>
+  </BugPattern>
+  <BugPattern type="SPEC_SELECTOR_CLOSE">
+    <ShortDescription>Selector closes without socket closure. </ShortDescription>
+    <LongDescription>Method {1} closes a selector, but it didn't close the socket registered in selector before.</LongDescription>
+    <Details>
+      <![CDATA[
+      <p> When a selector is closed, but the sockets registered in the selector were not closed before, which may lead to resource leakage.
+         There may be false warning, if the closure was encapsulated into a method.
       </p>
       ]]>
     </Details>
