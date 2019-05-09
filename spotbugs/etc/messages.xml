@@ -1736,6 +1736,13 @@ factory pattern to create these objects.</p>
       ]]>
     </Details>
   </Detector>
+  <Detector class="edu.umd.cs.findbugs.detect.ResourceLeakDetector">
+    <Details>
+      <![CDATA[
+        <p>Resource may leak without closure.</p>
+      ]]>
+    </Details>
+  </Detector>
   <!--
   **********************************************************************
   BugPatterns
@@ -8629,6 +8636,16 @@ after the call to initLogging, the logger configuration is lost
       <![CDATA[
       <p> When a selector is closed, but the sockets registered in the selector were not closed before, which may lead to resource leakage.
          There may be false warning, if the closure was encapsulated into a method.
+      </p>
+      ]]>
+    </Details>
+  </BugPattern>
+  <BugPattern type="SPEC_RESOURCE_LEAK">
+    <ShortDescription>Resource may leak without closure. </ShortDescription>
+    <LongDescription>Method {1} open a resource, but it doesn't close the resource after using it.</LongDescription>
+    <Details>
+      <![CDATA[
+      <p> When a resource, such as Stream, BufferReader, Connection and so on is opend, and it is not closed after used, which may lead to resource leakage.
       </p>
       ]]>
     </Details>

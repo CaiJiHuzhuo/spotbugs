@@ -668,6 +668,8 @@
                     reports="SPEC_ARRAY_INDEX_OUT_OF_BOUNDS"/>
           <Detector class="edu.umd.cs.findbugs.detect.SelectorCloseDetector" speed="fast" disabled="false"
                     reports="SPEC_SELECTOR_CLOSE"/>
+          <Detector class="edu.umd.cs.findbugs.detect.ResourceLeakDetector" speed="fast" disabled="false"
+                    reports="SPEC_RESOURCE_LEAK"/>
             <!-- Bug Categories -->
            <BugCategory category="NOISE" hidden="true"/>
 
@@ -1277,4 +1279,5 @@
           <BugPattern abbrev="SPEC" type="SPEC_OBJECT_NO_EQUALS_HASHCODE_SET" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_ARRAY_INDEX_OUT_OF_BOUNDS" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_SELECTOR_CLOSE" category="BAD_PRACTICE"/>
+          <BugPattern abbrev="SPEC" type="SPEC_RESOURCE_LEAK" category="BAD_PRACTICE"/>
 </FindbugsPlugin>
