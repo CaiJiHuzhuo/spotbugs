@@ -20,7 +20,9 @@ package edu.umd.cs.findbugs.detect;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -66,8 +68,23 @@ public class ResourceLeakDetector implements Detector {
             ObjectTypeFactory.getInstance("java.util.zip.ZipFile"), ObjectTypeFactory.getInstance("java.io.Reader"),
             ObjectTypeFactory.getInstance("java.io.Writer"), ObjectTypeFactory.getInstance("java.sql.Connection"),
             ObjectTypeFactory.getInstance("java.sql.Statement"), ObjectTypeFactory.getInstance("java.sql.ResultSet") };
+
+    private static Map<String, String> resourceMethodFilterMap = new HashMap<>();
+    private static Map<String, String> usedMethodFilterMap = new HashMap<>();
     private ClassContext classCtx;
     private final BugReporter bugReporter;
+
+    static {
+        resourceMethodFilterMap.put("org.apache.http.HttpEntity", "getContent");
+
+        usedMethodFilterMap.put("org.apache.commons.configuration.XMLConfiguration", "load");
+        usedMethodFilterMap.put("javax.ws.rs.core.Response", "ok");
+        usedMethodFilterMap.put("java.util.Properties", "load");// 子类
+        usedMethodFilterMap.put("javax.xml.bind.Unmarshaller", "unmarshal");// 接口
+        usedMethodFilterMap.put("org.dom4j.io.SAXReader", "read");
+        usedMethodFilterMap.put("javax.xml.parsers.DocumentBuilder", "parse");
+
+    }
 
     /**
      * @param bugReporter
@@ -124,76 +141,14 @@ public class ResourceLeakDetector implements Detector {
 
             Instruction ins = handle.getInstruction();
 
-            // if (ins instanceof INVOKEINTERFACE) {
-            // // get the return type of the method
-            // Type returnType = ((INVOKEINTERFACE) ins).getReturnType(constPoool);
-            //
-            // if (!(returnType instanceof ObjectType)) {
-            // continue;
-            // }
-            //
-            // if (isCreateResourceNoStore(handle, (ObjectType) returnType)
-            // && !usedInitResorce(i, locationList, (ObjectType) returnType, constPoool, method)) {
-            // fillBugReport(location, method);
-            // }
-            // continue;
-            // }
-            //
-            // if (ins instanceof INVOKESPECIAL) {
-            // Type classType = ((INVOKESPECIAL) ins).getReferenceType(constPoool);
-            // String methodName = ((INVOKESPECIAL) ins).getMethodName(constPoool);
-            // Type returnType = ((INVOKESPECIAL) ins).getReturnType(constPoool);
-            //
-            // // when the method's name is <init> means it is constructor method
-            // if ("<init>".equals(methodName)) {
-            // returnType = classType;
-            // }
-            //
-            // if (!(returnType instanceof ObjectType)) {
-            // continue;
-            // }
-            //
-            // if (isCreateResourceNoStore(handle, (ObjectType) returnType)
-            // && !usedInitResorce(i, locationList, (ObjectType) returnType, constPoool, method)) {
-            // fillBugReport(location, method);
-            // }
-            // continue;
-            // }
-            //
-            // if (ins instanceof INVOKEVIRTUAL) {
-            // Type returnType = ((INVOKEVIRTUAL) ins).getReturnType(constPoool);
-            //
-            // if (!(returnType instanceof ObjectType)) {
-            // continue;
-            // }
-            //
-            // if (isCreateResourceNoStore(handle, (ObjectType) returnType)
-            // && !usedInitResorce(i, locationList, (ObjectType) returnType, constPoool, method)) {
-            // fillBugReport(location, method);
-            // }
-            // continue;
-            // }
-            //
-            // if (ins instanceof INVOKESTATIC) {
-            // Type returnType = ((INVOKESTATIC) ins).getReturnType(constPoool);
-            //
-            // if (!(returnType instanceof ObjectType)) {
-            // continue;
-            // }
-            //
-            // if (isCreateResourceNoStore(handle, (ObjectType) returnType)
-            // && !usedInitResorce(i, locationList, (ObjectType) returnType, constPoool, method)) {
-            // fillBugReport(location, method);
-            // }
-            //
-            // continue;
-            // }
 
             if (ins instanceof INVOKESPECIAL || ins instanceof INVOKESTATIC || ins instanceof INVOKEVIRTUAL
                     || ins instanceof INVOKEINTERFACE) {
                 Type classType = ((FieldOrMethod) ins).getReferenceType(constPoool);
+                String className = ((FieldOrMethod) ins).getClassName(constPoool);
                 String methodName = ((InvokeInstruction) ins).getMethodName(constPoool);
                 Type returnType = ((InvokeInstruction) ins).getReturnType(constPoool);
+                Type[] argTypes = ((InvokeInstruction) ins).getArgumentTypes(constPoool);
 
                 // when the method's name is <init> means it is constructor method
                 if ("<init>".equals(methodName)) {
@@ -204,8 +159,14 @@ public class ResourceLeakDetector implements Detector {
                     continue;
                 }
 
-                if (isCreateResourceNoStore(handle, (ObjectType) returnType)
-                        && !usedInitResorce(i, locationList, (ObjectType) returnType, constPoool, method)) {
+                String filterMethod = resourceMethodFilterMap.get(className);
+
+                if (methodName.equals(filterMethod)) {
+                    continue;
+                }
+
+                if (isCreateResourceNoStore(handle, (ObjectType) returnType, methodName, argTypes)
+                        && !isFilter(i, locationList, (ObjectType) returnType, constPoool, method)) {
                     fillBugReport(location, method);
                 }
             }
@@ -223,11 +184,18 @@ public class ResourceLeakDetector implements Detector {
      * @return boolean
      * @throws ClassNotFoundException
      */
-    private boolean isCreateResourceNoStore(InstructionHandle handle, ObjectType type) throws ClassNotFoundException {
+    private boolean isCreateResourceNoStore(InstructionHandle handle, ObjectType type, String methodName,
+            Type[] argTypes) throws ClassNotFoundException {
         // check the return is the resource type
         if (!isSubTypeOfList(type, streamBaseList)) {
             return false;
         }
+
+        // get method, pass
+        if (methodName.startsWith("get") && argTypes.length == 0) {
+            return false;
+        }
+
         InstructionHandle nextHandle = handle.getNext();
 
         if (null == nextHandle) {
@@ -280,8 +248,9 @@ public class ResourceLeakDetector implements Detector {
         return false;
     }
 
+
     /**
-     * Check the resource is used as the parameter of a construct or set method
+     * Check the resource is filtered
      *
      * @param index
      *            the index of the location
@@ -298,7 +267,7 @@ public class ResourceLeakDetector implements Detector {
      * @throws CFGBuilderException
      * @throws ClassNotFoundException
      */
-    private boolean usedInitResorce(int index, List<Location> locationList, ObjectType resourceType,
+    private boolean isFilter(int index, List<Location> locationList, ObjectType resourceType,
             ConstantPoolGen constPoool, Method method)
             throws DataflowAnalysisException, CFGBuilderException, ClassNotFoundException {
         ValueNumberDataflow dataFlow = classCtx.getValueNumberDataflow(method);
@@ -332,19 +301,41 @@ public class ResourceLeakDetector implements Detector {
             if (ins instanceof INVOKESPECIAL || ins instanceof INVOKESTATIC || ins instanceof INVOKEVIRTUAL
                     || ins instanceof INVOKEINTERFACE) {
                 String methodName = ((InvokeInstruction) ins).getMethodName(constPoool);
-
-                // if it is not constructor method or set method, continue
-                if (!"<init>".equals(methodName) && !methodName.startsWith("set")) {
-                    continue;
-                }
+                String className = ((FieldOrMethod) ins).getClassName(constPoool);
                 Type[] paramTypes = ((InvokeInstruction) ins).getArgumentTypes(constPoool);
 
-                // check the input resource type is the parameter of the
-                // constructor or set method
-                if (isSubTypeOfList(resourceType, paramTypes)) {
+                // if call the close method, filter it
+                if (methodName.equals("close")) {
                     return true;
                 }
 
+                // if call the ok method, filter it
+                if (methodName.equals("ok")) {
+                    return true;
+                }
+
+                // when the resource is added to a list, filter it
+                if (className.endsWith("List") && methodName.equals("add")
+                        && isSubTypeOfList(resourceType, paramTypes)) {
+                    return true;
+                }
+
+                // when the resource is set to a variable, filter it
+                if (methodName.startsWith("set") && isSubTypeOfList(resourceType, paramTypes)) {
+                    return true;
+                }
+
+                // if it is not constructor method, and check the input resource type is the parameter of the
+                // constructor method
+                if ("<init>".equals(methodName) && isSubTypeOfList(resourceType, paramTypes)) {
+                    return true;
+                }
+
+                // if the resource is used as parameter of the filterMap's method, filter it
+                if (methodName.equals(usedMethodFilterMap.get(className))
+                        && isSubTypeOfList(resourceType, paramTypes)) {
+                    return true;
+                }
             }
         }
         return false;
