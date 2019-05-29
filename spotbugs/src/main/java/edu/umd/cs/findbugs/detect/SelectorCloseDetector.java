@@ -20,15 +20,12 @@ package edu.umd.cs.findbugs.detect;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.bcel.classfile.ConstantCP;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantNameAndType;
 import org.apache.bcel.classfile.ConstantUtf8;
-import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.INVOKEVIRTUAL;
@@ -57,7 +54,6 @@ import edu.umd.cs.findbugs.ba.vna.ValueNumberSourceInfo;
  */
 public class SelectorCloseDetector implements Detector {
 
-    private final Map<String, Field> selectorMap = new HashMap<>();
     private final BugReporter bugReporter;
     private ClassContext classCtx;
 
@@ -131,6 +127,9 @@ public class SelectorCloseDetector implements Detector {
                     // if the socketClose is empty, it means sockets were not closed
                     if (socketCloseList.isEmpty()) {
                         fillWarningReport(location, method);
+                    } else {
+                        // find a selector.close(), remove a socketChannel.close()
+                        socketCloseList.remove(0);
                     }
                 }
             }

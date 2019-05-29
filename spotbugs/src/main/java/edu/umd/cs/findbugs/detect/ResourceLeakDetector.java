@@ -69,13 +69,13 @@ public class ResourceLeakDetector implements Detector {
             ObjectTypeFactory.getInstance("java.io.Writer"), ObjectTypeFactory.getInstance("java.sql.Connection"),
             ObjectTypeFactory.getInstance("java.sql.Statement"), ObjectTypeFactory.getInstance("java.sql.ResultSet") };
 
-    private static Map<String, String> resourceMethodFilterMap = new HashMap<>();
+    // private static Map<String, String> resourceMethodFilterMap = new HashMap<>();
     private static Map<String, String> usedMethodFilterMap = new HashMap<>();
     private ClassContext classCtx;
     private final BugReporter bugReporter;
 
     static {
-        resourceMethodFilterMap.put("org.apache.http.HttpEntity", "getContent");
+        // resourceMethodFilterMap.put("org.apache.http.HttpEntity", "getContent");
 
         usedMethodFilterMap.put("org.apache.commons.configuration.XMLConfiguration", "load");
         usedMethodFilterMap.put("javax.ws.rs.core.Response", "ok");
@@ -159,11 +159,11 @@ public class ResourceLeakDetector implements Detector {
                     continue;
                 }
 
-                String filterMethod = resourceMethodFilterMap.get(className);
-
-                if (methodName.equals(filterMethod)) {
-                    continue;
-                }
+                // String filterMethod = resourceMethodFilterMap.get(className);
+                //
+                // if (methodName.equals(filterMethod)) {
+                // continue;
+                // }
 
                 if (isCreateResourceNoStore(handle, (ObjectType) returnType, methodName, argTypes)
                         && !isFilter(i, locationList, (ObjectType) returnType, constPoool, method)) {
@@ -353,8 +353,7 @@ public class ResourceLeakDetector implements Detector {
      * @throws DataflowAnalysisException
      */
     private boolean isInStack(ValueNumber valueNum, ValueNumberFrame frame) throws DataflowAnalysisException {
-        int stackDepth = frame.getStackDepth();
-        for (int i = 0; i < stackDepth; i++) {
+        for (int i = 0; i < frame.getStackDepth(); i++) {
             ValueNumber tmp = frame.getStackValue(i);
             if (valueNum.equals(tmp)) {
                 return true;
