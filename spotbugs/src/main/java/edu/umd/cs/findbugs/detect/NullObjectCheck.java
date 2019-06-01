@@ -25,10 +25,13 @@ import java.util.Map;
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.ATHROW;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.GETFIELD;
+import org.apache.bcel.generic.GotoInstruction;
 import org.apache.bcel.generic.IFNONNULL;
 import org.apache.bcel.generic.IFNULL;
+import org.apache.bcel.generic.IfInstruction;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InvokeInstruction;
@@ -36,8 +39,8 @@ import org.apache.bcel.generic.LoadInstruction;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.ReturnInstruction;
+import org.apache.bcel.generic.StoreInstruction;
 
-import edu.umd.cs.findbugs.BugAnnotation;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugReporter;
 import edu.umd.cs.findbugs.Detector;
@@ -63,6 +66,9 @@ public class NullObjectCheck implements Detector {
     private ClassContext classCtx;
     private final BugReporter bugReporter;
 
+    /**
+     * @param bugReporter
+     */
     public NullObjectCheck(BugReporter bugReporter) {
         this.bugReporter = bugReporter;
     }
@@ -89,9 +95,15 @@ public class NullObjectCheck implements Detector {
 
     }
 
+    /**
+     * @param method
+     * @throws CFGBuilderException
+     * @throws DataflowAnalysisException
+     */
     private void analyseMethod(Method method) throws CFGBuilderException, DataflowAnalysisException {
         CFG cfg = classCtx.getCFG(method);
-        Map<String, ObjectModel> objModels = new HashMap<>();
+        // key is value number of the object, value is the object model
+        Map<ValueNumber, ObjectModel> objNullCheckMap = new HashMap<>();
         if (null == cfg) {
             return;
         }
@@ -107,22 +119,43 @@ public class NullObjectCheck implements Detector {
             }
             Instruction ins = handle.getInstruction();
 
+            // when encounter if(obj == null) or if(obj != null)
             if (ins instanceof IFNONNULL || ins instanceof IFNULL) {
-                ObjectModel objModel = getObjectModel(location, method, flow);
+                int targetPc = ((IfInstruction) ins).getTarget().getPosition();
+                if (targetPc < handle.getPosition()) {
+                    continue;
+                }
+                // Get the value number stack of ifinstruction
+                ValueNumberFrame frameTmp = flow.getFactAtLocation(location);
+
+                // the top value of stack must be the Object to be compared
+                ValueNumber objValueNum = frameTmp.getTopValue();
+                ObjectModel objModel = getObjectModel(location, method, constPool);
                 if (null != objModel) {
-                    objModels.put(objModel.getName(), objModel);
+                    objModel.setValueNumber(objValueNum);
+                    objNullCheckMap.put(objModel.getValueNumber(), objModel);
                 }
             }
 
+            // when encounter invokeInstruction
             if (ins instanceof InvokeInstruction) {
+                // if the objNullCheckMap is empty, do nothing
+                if (objNullCheckMap.isEmpty()) {
+                    continue;
+                }
                 int paramNum = ((InvokeInstruction) ins).getArgumentTypes(constPool).length;
-                Map<String, String> objInfo = getObjName(flow, location, paramNum, method);
-                if (null != objInfo) {
-                    ObjectModel objModel = objModels.get(objInfo.get("name"));
-                    String isField = objInfo.get("field");
-                    if (objModel.getIndexInStack() == -1 && isField.equals("true")
-                            || objModel.getIndexInStack() != -1 && isField.equals("false")) {
-                        checkNullPoint(location, handle.getPosition(), objModel, method, constPool);
+
+                // get the access object
+                ObjectModel accessObj = accessObjInfo(flow, location, paramNum, method);
+
+                if (null != accessObj) {
+                    // check the accessed object has been null checked
+                    ObjectModel objModel = objNullCheckMap.get(accessObj.getValueNumber());
+                    boolean res = checkNullPoint(location, handle.getPosition(), objModel, constPool);
+                    if (!res) {
+                        fillWarningReport(objModel.getName(), location, method);
+                        // every object warn once time
+                        objNullCheckMap.remove(accessObj.getValueNumber());
                     }
                 }
             }
@@ -138,30 +171,26 @@ public class NullObjectCheck implements Detector {
      *            location
      * @param method
      *            method
-     * @param flow
-     *            value number data flow
+     * @param constPool
+     *            constant pool
      * @return object model
      * @throws DataflowAnalysisException
      */
-    private ObjectModel getObjectModel(Location location, Method method, ValueNumberDataflow flow)
+    private static ObjectModel getObjectModel(Location location, Method method, ConstantPoolGen constPool)
             throws DataflowAnalysisException {
         InstructionHandle handle = location.getHandle();
-
-        ValueNumberFrame frame = flow.getFactAtLocation(location);
-        ValueNumber topValueNum = frame.getTopValue();
-
         InstructionHandle preHandle = handle.getPrev();
+
         if (null != preHandle) {
             Instruction preIns = preHandle.getInstruction();
+            // the object is global field
             if (preIns instanceof GETFIELD) {
-                FieldAnnotation field = ValueNumberSourceInfo.findFieldAnnotationFromValueNumber(method, location,
-                        topValueNum, frame);
-                if (null != field) {
-                    ObjectModel objModel = new ObjectModel(field.getFieldName(), Integer.MAX_VALUE, handle, -1);
+                String fieldName = ((GETFIELD) preIns).getFieldName(constPool);
+                ObjectModel objModel = new ObjectModel(fieldName, Integer.MAX_VALUE, handle, -1);
                     return objModel;
-                }
             }
 
+            // the object is local variable
             if (preIns instanceof LoadInstruction) {
                 int local = ((LoadInstruction) preIns).getIndex();
                 LocalVariableTable localVariableTable = method.getLocalVariableTable();
@@ -176,40 +205,83 @@ public class NullObjectCheck implements Detector {
         return null;
     }
 
-    private void checkNullPoint(Location accessLocation, int currentPc, ObjectModel objModel, Method method,
-            ConstantPoolGen constPool) throws DataflowAnalysisException, CFGBuilderException {
+    /**
+     * Check the instruction has accessed the null object
+     *
+     * @param accessLocation
+     *            location to be checked
+     * @param currentPc
+     *            current position
+     * @param objModel
+     *            object null checked model
+     * @param constPool
+     *            constant pool
+     * @return boolean check result
+     */
+    private static boolean checkNullPoint(Location accessLocation, int currentPc, ObjectModel objModel,
+            ConstantPoolGen constPool) {
         if (null == objModel) {
-            return;
+            return true;
         }
 
         InstructionHandle ifHandle = objModel.getIfHandle();
         Instruction ifIns = ifHandle.getInstruction();
         int ifPc = ifHandle.getPosition();
 
+        // if the access instruction's position beyond the object's range, return true
         if (currentPc > objModel.getEndPc()) {
-            return;
+            return true;
         }
 
         if (ifIns instanceof IFNONNULL) {
             InstructionHandle targetHandle = ((IFNONNULL) ifIns).getTarget();
             int targetPc = targetHandle.getPosition();
 
+            // if the access instruction is between the if branch, and there is no return and new instruction before,
+            // return false
+            /*
+             * if(obj == null){ obj.toString(); }
+             */
             if (currentPc > ifPc && currentPc < targetPc
-                    && !hasReturn(ifHandle, accessLocation.getHandle(), objModel, constPool)) {
-                fillWarningReport(accessLocation, method);
+                    && !hasReturnOrNew(ifHandle, accessLocation.getHandle(), objModel, constPool)) {
+                return false;
+
             }
         }
 
         if (ifIns instanceof IFNULL) {
             InstructionHandle targetHandle = ((IFNULL) ifIns).getTarget();
             int targetPc = targetHandle.getPosition();
-            if (currentPc > targetPc && !hasReturn(targetHandle, accessLocation.getHandle(), objModel, constPool)) {
-                fillWarningReport(accessLocation, method);
+
+            // if the access instruction is beyond the else branch, and there is no return and new instruction before,
+            // return false
+            /*
+             * if(obj != null) { ... } else { obj.toString(); }
+             */
+            if (currentPc > targetPc
+                    && !hasReturnOrNew(targetHandle, accessLocation.getHandle(), objModel, constPool)) {
+                return false;
             }
         }
+
+        return true;
     }
 
-    private boolean hasReturn(InstructionHandle startHandle, InstructionHandle endHandle, ObjectModel objModel,
+    /**
+     * Check there is return or new instruction between start handle and end handle;
+     *
+     * @param startHandle
+     *            start handle
+     * @param endHandle
+     *            end handle
+     * @param objModel
+     *            object null checked model
+     * @param constPool
+     *            constant pool
+     * @return boolean result
+     */
+    private static boolean hasReturnOrNew(InstructionHandle startHandle, InstructionHandle endHandle,
+            ObjectModel objModel,
             ConstantPoolGen constPool) {
         int endPc = endHandle.getPosition();
         int index = objModel.getIndexInStack();
@@ -219,21 +291,46 @@ public class NullObjectCheck implements Detector {
         int loopPc = startHandle.getPosition();
 
         while (loopPc < endPc) {
+            // when encounter return instruction, return true
             if (loopIns instanceof ReturnInstruction) {
                 return true;
             }
 
-            if (index != -1 && loopIns instanceof LoadInstruction) {
-                int indexTmp = ((LoadInstruction) loopIns).getIndex();
+            // when encounter throw exception, return true
+            if (loopIns instanceof ATHROW) {
+                return true;
+            }
+
+            // when encounter assign value to the local object, for example
+            /**
+             * if(obj = null){ obj = getString(); //obj = new Sting("test") }
+             */
+            if (index != -1 && loopIns instanceof StoreInstruction) {
+                int indexTmp = ((StoreInstruction) loopIns).getIndex();
                 if (indexTmp == index) {
                     return true;
                 }
             }
 
+            // when encounter assign value to the global object, for example
+            /**
+             * if(obj = null){ obj = getString(); //obj = new Sting("test") }
+             */
             if (index == -1 && loopIns instanceof PUTFIELD) {
                 String filedName = ((PUTFIELD) loopIns).getFieldName(constPool);
                 if (filedName.equals(objModel.getName())) {
                     return true;
+                }
+            }
+
+            // when encounter goto instruction, goto the target instruction
+            if (loopIns instanceof GotoInstruction) {
+                if (((GotoInstruction) loopIns).getTarget().getPosition() > loopPc) {
+                    loopHandle = ((GotoInstruction) loopIns).getTarget();
+                    loopIns = loopHandle.getInstruction();
+                    loopPc = loopHandle.getPosition();
+                    endPc = Integer.MAX_VALUE;
+                    continue;
                 }
             }
 
@@ -249,30 +346,44 @@ public class NullObjectCheck implements Detector {
 
     }
 
-    private Map<String, String> getObjName(ValueNumberDataflow flow, Location location, int paramNum, Method method)
+    /**
+     * Get the access object from the invoke instruction, as name.toString(), name is the target object
+     *
+     * @param flow
+     *            value number data flow of this metod
+     * @param location
+     *            location
+     * @param paramNum
+     *            the number of called method's parameter
+     * @param method
+     *            method to be analyzed
+     * @return the access object
+     * @throws DataflowAnalysisException
+     */
+    private static ObjectModel accessObjInfo(ValueNumberDataflow flow, Location location, int paramNum, Method method)
             throws DataflowAnalysisException {
-        Map<String, String> objInfoMap = new HashMap<>();
         ValueNumberFrame vnaFrame = flow.getFactAtLocation(location);
+
+        // get the index of the object in stack
         int objStack = vnaFrame.getNumSlots() - paramNum - 1;
 
         if (objStack < vnaFrame.getNumLocals()) {
             return null;
         }
-        ValueNumber valueNumber = vnaFrame.getValue(vnaFrame.getNumSlots() - paramNum - 1);
+        ValueNumber valueNumber = vnaFrame.getValue(objStack);
         FieldAnnotation fieldAnnotation = ValueNumberSourceInfo.findFieldAnnotationFromValueNumber(method, location,
                 valueNumber, vnaFrame);
 
         if (null != fieldAnnotation) {
-            objInfoMap.put("name", fieldAnnotation.getFieldName());
-            objInfoMap.put("field", "true");
-            return objInfoMap;
+            ObjectModel obj = new ObjectModel(fieldAnnotation.getFieldName(), valueNumber);
+            return obj;
         }
+
         LocalVariableAnnotation localVariable = ValueNumberSourceInfo.findLocalAnnotationFromValueNumber(method,
                 location, valueNumber, vnaFrame);
         if (null != localVariable) {
-            objInfoMap.put("name", localVariable.getName());
-            objInfoMap.put("field", "false");
-            return objInfoMap;
+            ObjectModel obj = new ObjectModel(localVariable.getName(), valueNumber);
+            return obj;
         }
 
         return null;
@@ -290,7 +401,7 @@ public class NullObjectCheck implements Detector {
      * @throws DataflowAnalysisException
      * @throws CFGBuilderException
      */
-    private void fillWarningReport(Location location, Method method)
+    private void fillWarningReport(String objName, Location location, Method method)
             throws DataflowAnalysisException, CFGBuilderException {
         if (null == location) {
             return;
@@ -298,21 +409,13 @@ public class NullObjectCheck implements Detector {
         InstructionHandle insHandle = location.getHandle();
         MethodGen methodGen = classCtx.getMethodGen(method);
         String sourceFile = classCtx.getJavaClass().getSourceFileName();
-        ValueNumberDataflow valueNumDataFlow = classCtx.getValueNumberDataflow(method);
-
-        ValueNumberFrame vnaFrame = valueNumDataFlow.getFactAtLocation(location);
-
-        ValueNumber valueNumber = vnaFrame.getValue(vnaFrame.getNumLocals());
-
-        BugAnnotation variableAnnotation = ValueNumberSourceInfo.findAnnotationFromValueNumber(method, location,
-                valueNumber, vnaFrame, "VALUE_OF");
 
         SourceLineAnnotation sourceLineAnnotation = SourceLineAnnotation.fromVisitedInstruction(classCtx, methodGen,
                 sourceFile, insHandle);
 
         BugInstance bug = new BugInstance(this, "SPEC_ACCESS_NULL_OBJECT", NORMAL_PRIORITY);
         bug.addClassAndMethod(classCtx.getJavaClass(), method);
-        bug.addOptionalAnnotation(variableAnnotation);
+        bug.addString(objName);
         bug.addSourceLine(sourceLineAnnotation);
         bugReporter.reportBug(bug);
 
@@ -325,10 +428,16 @@ public class NullObjectCheck implements Detector {
     }
 
     private static class ObjectModel {
-        private String name;
+        private final String name;
         private int endPc;
         private InstructionHandle ifHandle;
         private int indexInStack;
+        private ValueNumber valueNumber;
+
+        public ObjectModel(String name, ValueNumber valueNumber) {
+            this.name = name;
+            this.valueNumber = valueNumber;
+        }
 
         public ObjectModel(String name, int endPc, InstructionHandle ifHandle, int indexInStack) {
             this.name = name;
@@ -341,32 +450,24 @@ public class NullObjectCheck implements Detector {
             return name;
         }
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
         public int getEndPc() {
             return endPc;
-        }
-
-        public void setEndPc(int endPc) {
-            this.endPc = endPc;
         }
 
         public InstructionHandle getIfHandle() {
             return ifHandle;
         }
 
-        public void setIfHandle(InstructionHandle ifHandle) {
-            this.ifHandle = ifHandle;
-        }
-
         public int getIndexInStack() {
             return indexInStack;
         }
 
-        public void setIndexInStack(int indexInStack) {
-            this.indexInStack = indexInStack;
+        public ValueNumber getValueNumber() {
+            return valueNumber;
+        }
+
+        public void setValueNumber(ValueNumber valueNumber) {
+            this.valueNumber = valueNumber;
         }
 
     }

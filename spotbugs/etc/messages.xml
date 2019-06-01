@@ -8660,7 +8660,7 @@ after the call to initLogging, the logger configuration is lost
   
   <BugPattern type="SPEC_ACCESS_NULL_OBJECT">
     <ShortDescription>Access an object is known null. </ShortDescription>
-    <LongDescription>Method {1} accesses an object which is known null.</LongDescription>
+    <LongDescription>Method {1} accesses the object {2} which is known null.</LongDescription>
     <Details>
       <![CDATA[
       <p> The object has been checked to be null before, but it still access the object, which will cause NullPointException.
