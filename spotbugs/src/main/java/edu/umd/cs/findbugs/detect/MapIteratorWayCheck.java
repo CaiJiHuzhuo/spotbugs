@@ -406,7 +406,10 @@ public class MapIteratorWayCheck implements Detector {
      */
     private void checkMapKeysetValid(LocalVariable cycleVa, List<Location> locationList, int startIndex, Method method,
             ConstantPoolGen constPool) throws DataflowAnalysisException, CFGBuilderException {
+        // the count of key used
         int keyUsedCount = 0;
+
+        // the count of the map.get(key) called
         int getKeyCount = 0;
         Location startLocation = locationList.get(startIndex);
         String mapName = getFieldName(1, startLocation, method);
@@ -463,6 +466,8 @@ public class MapIteratorWayCheck implements Detector {
         }
 
         if (keyUsedCount != 0 && (keyUsedCount == getKeyCount)) {
+            // when the count of key used is equal with the count of map.get(key) called, which means value is only
+            // needed
             fillBugReport(WAY_KETSET_STR, WAY_VALUES_STR, startLocation, method);
         } else if (getKeyCount > 0) {
             fillBugReport(WAY_KETSET_STR, WAY_ENTRYSET_STR, startLocation, method);
