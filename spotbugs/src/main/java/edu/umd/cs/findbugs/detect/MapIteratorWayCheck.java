@@ -406,7 +406,8 @@ public class MapIteratorWayCheck implements Detector {
      */
     private void checkMapKeysetValid(LocalVariable cycleVa, List<Location> locationList, int startIndex, Method method,
             ConstantPoolGen constPool) throws DataflowAnalysisException, CFGBuilderException {
-        int usedCount = 0;
+        int keyUsedCount = 0;
+        int getKeyCount = 0;
         Location startLocation = locationList.get(startIndex);
         String mapName = getFieldName(1, startLocation, method);
 
@@ -433,7 +434,7 @@ public class MapIteratorWayCheck implements Detector {
 
             if (ins instanceof ALOAD) {
                 if (cycleVa.getIndex() == ((ALOAD) ins).getIndex()) {
-                    usedCount++;
+                    keyUsedCount++;
                 }
             }
 
@@ -454,16 +455,16 @@ public class MapIteratorWayCheck implements Detector {
                 String fieldName = getFieldName(0, loc, method);
                 String getKeyName = getFieldName(1, loc, method);
                 String cycleName = cycleVa.getName();
-                if (mapName.equals(fieldName) && cycleVa.getName().equals(getKeyName)) {
-                    usedCount--;
+                if (mapName.equals(fieldName) && cycleName.equals(getKeyName)) {
+                    getKeyCount++;
                 }
             }
 
         }
 
-        if (usedCount <= 0) {
+        if (keyUsedCount != 0 && (keyUsedCount == getKeyCount)) {
             fillBugReport(WAY_KETSET_STR, WAY_VALUES_STR, startLocation, method);
-        } else {
+        } else if (getKeyCount > 0) {
             fillBugReport(WAY_KETSET_STR, WAY_ENTRYSET_STR, startLocation, method);
         }
     }
@@ -494,6 +495,7 @@ public class MapIteratorWayCheck implements Detector {
             Method method, ConstantPoolGen constPool) throws DataflowAnalysisException, CFGBuilderException {
         int keyCount = 0;
         int valueCount = 0;
+        boolean hasRemove = false;
         int startLoop = cycleVa.getStartPC();
         int endLoop = cycleVa.getLength() + startLoop;
 
@@ -532,13 +534,22 @@ public class MapIteratorWayCheck implements Detector {
                 }
             }
 
+            if (CLASS_ITERATOR.equals(className) && "remove".equals(methodName)) {
+                hasRemove = true;
+            }
+
         }
 
         // if getKey or getValue is never called, invalid
-        if (0 == keyCount) {
-            fillBugReport(WAY_ENTRYSET_STR, WAY_VALUES_STR, locationList.get(startIndex), method);
-        } else if (0 == valueCount) {
+        if (0 == keyCount && 0 != valueCount) {
+            // when encounter iterator.remove(), map.values() is not supported
+            if (!hasRemove) {
+                fillBugReport(WAY_ENTRYSET_STR, WAY_VALUES_STR, locationList.get(startIndex), method);
+            }
+        } else if (0 == valueCount && 0 != keyCount) {
             fillBugReport(WAY_ENTRYSET_STR, WAY_KETSET_STR, locationList.get(startIndex), method);
+        } else {
+            // do nothing
         }
     }
 
