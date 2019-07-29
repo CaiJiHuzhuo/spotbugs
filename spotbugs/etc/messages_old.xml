@@ -413,6 +413,7 @@ literals.
     <Details>
 <![CDATA[
 <p> Looks for methods with Boolean return type that return explicit null values.</p>
+
 ]]>
     </Details>
   </Detector>
@@ -420,6 +421,7 @@ literals.
     <Details>
 <![CDATA[
 <p> Looks for methods with Optional return type that return explicit null values.</p>
+
 ]]>
     </Details>
   </Detector>
@@ -427,6 +429,7 @@ literals.
     <Details>
 <![CDATA[
 <p> Looks for useless objects.</p>
+
 ]]>
     </Details>
   </Detector>
@@ -442,6 +445,7 @@ literals.
 <![CDATA[
 <p> Looks for cases where the return value of a function is discarded
 after being checked for non-null.  </p>
+
 ]]>
     </Details>
   </Detector>
@@ -451,6 +455,7 @@ after being checked for non-null.  </p>
 <p> Looks for uses of this.getClass().getResource(...), which can give
 unexpected results if the class is extended by a class in
 another package. </p>
+
 ]]>
     </Details>
   </Detector>
@@ -602,6 +607,7 @@ Normally, this detector does nothing.</p>
 hash values of the operations performed by methods.
 These warnings are bogus random noise, intended to be useful
         as a control in data mining experiments, not in finding actual bugs in software.
+
  This detector is just a hook for testing new detectors.
 Normally, this detector does nothing.</p>
 ]]>
@@ -1772,6 +1778,7 @@ factory pattern to create these objects.</p>
       <![CDATA[
     <p>This class is bigger than can be effectively handled, and was not fully analyzed for errors.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1823,6 +1830,7 @@ For example, one might assume that writing new BigDecimal(0.1) in Java creates a
 You probably want to use the BigDecimal.valueOf(double d) method, which uses the String representation
 of the double to create the BigDecimal (e.g., BigDecimal.valueOf(0.1) gives 0.1).
 </p>
+
 ]]>
     </Details>
     </BugPattern>
@@ -1835,6 +1843,7 @@ of the double to create the BigDecimal (e.g., BigDecimal.valueOf(0.1) gives 0.1)
     <p>
 This partical method invocation doesn't make sense, for reasons that should be apparent from inspection.
 </p>
+
 ]]>
     </Details>
     </BugPattern>
@@ -1846,6 +1855,7 @@ This partical method invocation doesn't make sense, for reasons that should be a
       <![CDATA[
     <p>This call doesn't pass any objects to the EasyMock method, so the call doesn't do anything.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1857,6 +1867,7 @@ This partical method invocation doesn't make sense, for reasons that should be a
     <p>(<a href="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/ScheduledThreadPoolExecutor.html#ScheduledThreadPoolExecutor%28int%29">Javadoc</a>)
 A ScheduledThreadPoolExecutor with zero core threads will never execute anything; changes to the max pool size are ignored.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1868,6 +1879,7 @@ A ScheduledThreadPoolExecutor with zero core threads will never execute anything
     <p>(<a href="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/ScheduledThreadPoolExecutor.html">Javadoc</a>)
 While ScheduledThreadPoolExecutor inherits from ThreadPoolExecutor, a few of the inherited tuning methods are not useful for it. In particular, because it acts as a fixed-sized pool using corePoolSize threads and an unbounded queue, adjustments to maximumPoolSize have no useful effect.
     </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1878,6 +1890,7 @@ While ScheduledThreadPoolExecutor inherits from ThreadPoolExecutor, a few of the
       <![CDATA[
     <p>All targets of this method invocation throw an UnsupportedOperationException.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1888,6 +1901,7 @@ While ScheduledThreadPoolExecutor inherits from ThreadPoolExecutor, a few of the
       <![CDATA[
     <p>This code creates a database connect using a blank or empty password. This indicates that the database is not protected by a password.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1899,6 +1913,7 @@ While ScheduledThreadPoolExecutor inherits from ThreadPoolExecutor, a few of the
     <p>This code creates a database connect using a hardcoded, constant password. Anyone with access to either the source code or the compiled code can
     easily learn the password.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1915,6 +1930,7 @@ If SpotBugs found <em>any</em>, you <em>almost certainly</em> have more
 vulnerabilities that SpotBugs doesn't report. If you are concerned about HTTP response splitting, you should seriously
 consider using a commercial static analysis or pen-testing tool.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1931,6 +1947,7 @@ If SpotBugs found <em>any</em>, you <em>almost certainly</em> have more
 vulnerabilities that SpotBugs doesn't report. If you are concerned about HTTP response splitting, you should seriously
 consider using a commercial static analysis or pen-testing tool.
 </p>
+
 ]]>
         </Details>
   </BugPattern>
@@ -1943,6 +1960,7 @@ consider using a commercial static analysis or pen-testing tool.
     <Details>
 <![CDATA[
     <p>The software uses an HTTP request parameter to construct a pathname that should be within a restricted directory, but it does not properly neutralize sequences such as ".." that can resolve to a location that is outside of that directory.
+
 See <a href="http://cwe.mitre.org/data/definitions/23.html">http://cwe.mitre.org/data/definitions/23.html</a>
 for more information.</p>
 <p>SpotBugs looks only for the most blatant, obvious cases of relative path traversal.
@@ -1950,6 +1968,7 @@ If SpotBugs found <em>any</em>, you <em>almost certainly</em> have more
 vulnerabilities that SpotBugs doesn't report. If you are concerned about relative path traversal, you should seriously
 consider using a commercial static analysis or pen-testing tool.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1960,6 +1979,7 @@ consider using a commercial static analysis or pen-testing tool.
 <![CDATA[
     <p>The software uses an HTTP request parameter to construct a pathname that should be within a restricted directory,
 but it does not properly neutralize absolute path sequences such as "/abs/path" that can resolve to a location that is outside of that directory.
+
 See <a href="http://cwe.mitre.org/data/definitions/36.html">http://cwe.mitre.org/data/definitions/36.html</a>
 for more information.</p>
 <p>SpotBugs looks only for the most blatant, obvious cases of absolute path traversal.
@@ -1967,6 +1987,7 @@ If SpotBugs found <em>any</em>, you <em>almost certainly</em> have more
 vulnerabilities that SpotBugs doesn't report. If you are concerned about absolute path traversal, you should seriously
 consider using a commercial static analysis or pen-testing tool.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -1984,6 +2005,7 @@ If SpotBugs found <em>any</em>, you <em>almost certainly</em> have more cross si
 vulnerabilities that SpotBugs doesn't report. If you are concerned about cross site scripting, you should seriously
 consider using a commercial static analysis or pen-testing tool.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -2003,6 +2025,7 @@ If SpotBugs found <em>any</em>, you <em>almost certainly</em> have more cross si
 vulnerabilities that SpotBugs doesn't report. If you are concerned about cross site scripting, you should seriously
 consider using a commercial static analysis or pen-testing tool.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -2036,6 +2059,7 @@ two threads going through the Swing component-based GUI -- it's a serious flaw t
 could result in deadlocks or other related threading issues. A pack call causes
 components to be realized. As they are being realized (that is, not necessarily
 visible), they could trigger listener notification on the event dispatch thread.</p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -2155,6 +2179,7 @@ another package.</p>
 If it is null and then synchronized on a NullPointerException will be
 thrown and the check would be pointless. Better to synchronize on
 another field.</p>
+
 ]]>
      </Details>
   </BugPattern>
@@ -2361,6 +2386,7 @@ If this class ("<i>A</i>") is extended by a subclass ("<i>B</i>"),
 and the subclass <i>B</i> calls super.clone(), then it is likely that
 <i>B</i>'s clone() method will return an object of type <i>A</i>,
 which violates the standard contract for clone().</p>
+
 <p> If all clone() methods call super.clone(), then they are guaranteed
 to use Object.clone(), which always returns an object of the correct type.</p>
 ]]>
@@ -2373,6 +2399,7 @@ to use Object.clone(), which always returns an object of the correct type.</p>
 <![CDATA[
 <p>The identifier is a word that is reserved as a keyword in later versions of Java, and your code will need to be changed
 in order to compile it in later versions of Java.</p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -2384,6 +2411,7 @@ in order to compile it in later versions of Java.</p>
 <p>This identifier is used as a keyword in later versions of Java. This code, and
 any code that references this API,
 will need to be changed in order to compile it in later versions of Java.</p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -2964,6 +2992,7 @@ that looks like:
     else return false;
 }
 </code></pre>
+
 <p>This is considered bad practice, as it makes it very hard to implement an equals method that
 is symmetric and transitive. Without those properties, very unexpected behaviors are possible.
 </p>
@@ -3288,6 +3317,7 @@ the recommended <code>hashCode</code> implementation to use is:</p>
     failures will occur in classes such as PriorityQueue.
     In Java 5 the PriorityQueue.remove method uses the compareTo method,
     while in Java 6 it uses the equals method.</p>
+
 <p>From the JavaDoc for the compareTo method in the Comparable interface:
 <blockquote>
 It is strongly recommended, but not strictly required that <code>(x.compareTo(y)==0) == (x.equals(y))</code>.
@@ -3320,6 +3350,7 @@ is "Note: this class has a natural ordering that is inconsistent with equals."
   the identity hash code, an arbitrary value assigned to the object
   by the VM).&nbsp; Therefore, the class is very likely to violate the
   invariant that equal objects must have equal hashcodes.</p>
+
 <p>If you don't think instances of this class will ever be inserted into a HashMap/HashTable,
 the recommended <code>hashCode</code> implementation to use is:</p>
 <pre><code>public int hashCode() {
@@ -3341,6 +3372,7 @@ the recommended <code>hashCode</code> implementation to use is:</p>
   the identity hash code, an arbitrary value assigned to the object
   by the VM).&nbsp; Therefore, the class is very likely to violate the
   invariant that equal objects must have equal hashcodes.</p>
+
   <p>If you don't want to define a hashCode method, and/or don't
    believe the object will ever be put into a HashMap/Hashtable,
    define the <code>hashCode()</code> method
@@ -3450,16 +3482,20 @@ Thus, having a mutable instance field generally creates race conditions.
   <li> The number of unsynchronized field accesses (reads and writes) was no more than
        one third of all accesses, with writes being weighed twice as high as reads</li>
   </ul>
+
   <p> A typical bug matching this bug pattern is forgetting to synchronize
   one of the methods in a class that is intended to be thread-safe.</p>
+
   <p> You can select the nodes labeled "Unsynchronized access" to show the
   code locations where the detector believed that a field was accessed
   without synchronization.</p>
+
   <p> Note that there are various sources of inaccuracy in this detector;
   for example, the detector cannot statically detect all situations in which
   a lock is held.&nbsp; Also, even when the detector is accurate in
   distinguishing locked vs. unlocked accesses, the code in question may still
   be correct.</p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -3474,6 +3510,7 @@ Thus, having a mutable instance field generally creates race conditions.
   method on a monitor is done because some condition another thread is
   waiting for has become true.&nbsp; However, for the condition to be meaningful,
   it must involve a heap object that is visible to both threads.</p>
+
   <p> This bug does not necessarily indicate an error, since the change to
   mutable object state may have taken place in a method which then called
   the method containing the notification.</p>
@@ -3579,8 +3616,10 @@ knowing the left-hand side. This can be less efficient and
 can result in errors if the left-hand side guards cases
 when evaluating the right-hand side can generate an error.
 </p>
+
 <p>See <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.22.2">the Java
 Language Specification</a> for details.
+
 </p>
 ]]>
     </Details>
@@ -3598,8 +3637,10 @@ to be evaluated even when the result can be inferred from
 knowing the left-hand side. This can be less efficient and
 can result in errors if the left-hand side guards cases
 when evaluating the right-hand side can generate an error.
+
 <p>See <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.22.2">the Java
 Language Specification</a> for details.
+
 </p>
 ]]>
     </Details>
@@ -3671,15 +3712,19 @@ This not necessarily a bug, but is worth examining
 <pre><code>abstract class A {
     int hashCode;
     abstract Object getValue();
+
     A() {
         hashCode = getValue().hashCode();
     }
 }
+
 class B extends A {
     Object value;
+
     B(Object v) {
         this.value = v;
     }
+
     Object getValue() {
         return value;
     }
@@ -3730,6 +3775,7 @@ For example, in the following code, <code>foo</code> will be null.</p>
     static class InnerClassSingleton extends CircularClassInitialization {
         static InnerClassSingleton singleton = new InnerClassSingleton();
     }
+
     static CircularClassInitialization foo = InnerClassSingleton.singleton;
 }
 </code></pre>
@@ -3870,8 +3916,10 @@ than less contrived solutions.
   <li> The number of unsynchronized field accesses (reads and writes) was no more than
        one third of all accesses, with writes being weighed twice as high as reads</li>
   </ul>
+
   <p> A typical bug matching this bug pattern is forgetting to synchronize
   one of the methods in a class that is intended to be thread-safe.</p>
+
   <p> Note that there are various sources of inaccuracy in this detector;
   for example, the detector cannot statically detect all situations in which
   a lock is held.&nbsp; Also, even when the detector is accurate in
@@ -4194,11 +4242,13 @@ You should try hard to eliminate one of them, unless you are forced to have both
   <p> The method in the subclass doesn't override a similar method in a superclass because the type of a parameter doesn't exactly match
 the type of the corresponding parameter in the superclass. For example, if you have:</p>
 <pre><code>import alpha.Foo;
+
 public class A {
     public int f(Foo x) { return 17; }
 }
 ----
 import beta.Foo;
+
 public class B extends A {
     public int f(Foo x) { return 42; }
 }
@@ -4219,11 +4269,13 @@ types are <code>Foo</code>'s from different packages.
   <p> The method in the subclass doesn't override a similar method in a superclass because the type of a parameter doesn't exactly match
 the type of the corresponding parameter in the superclass. For example, if you have:</p>
 <pre><code>import alpha.Foo;
+
 public class A {
     public int f(Foo x) { return 17; }
 }
 ----
 import beta.Foo;
+
 public class B extends A {
     public int f(Foo x) { return 42; }
     public int f(alpha.Foo x) { return 27; }
@@ -4234,6 +4286,7 @@ override the
 <code>f(Foo)</code> method defined in class <code>A</code>, because the argument
 types are <code>Foo</code>'s from different packages.
 </p>
+
 <p>In this case, the subclass does define a method with a signature identical to the method in the superclass,
 so this is presumably understood. However, such methods are exceptionally confusing. You should strongly consider
 removing or deprecating the method with the similar but not identical signature.
@@ -5195,6 +5248,7 @@ something that should be closed.
 This will lead to a <code>NullPointerException</code> when the code is executed.&nbsp;
 Note that because SpotBugs currently does not prune infeasible exception paths,
 this may be a false warning.</p>
+
 <p> Also note that SpotBugs considers the default case of a switch statement to
 be an exception path, since the default case is often infeasible.</p>
 ]]>
@@ -5252,6 +5306,7 @@ dereferenced here.&nbsp; This may lead to a <code>NullPointerException</code>
 when the code is executed.&nbsp;
 Note that because SpotBugs currently does not prune infeasible exception paths,
 this may be a false warning.</p>
+
 <p> Also note that SpotBugs considers the default case of a switch statement to
 be an exception path, since the default case is often infeasible.</p>
 ]]>
@@ -5444,6 +5499,7 @@ closed.</p>
 return a length zero array rather than a null reference to indicate that there
 are no results (i.e., an empty list of results).
 This way, no explicit check for null is needed by clients of the method.</p>
+
 <p>On the other hand, using null to indicate
 "there is no answer to this question" is probably appropriate.
 For example, <code>File.listFiles()</code> returns an empty list
@@ -5551,6 +5607,7 @@ to null. Two types of redundant comparison are reported:
 <li> Both values compared are definitely null</li>
 <li> One value is definitely null and the other is definitely not null</li>
 </ul>
+
 <p> This particular warning generally indicates that a
 value known not to be null was checked against null.
 While the check is not necessary, it may simply be a case
@@ -5911,6 +5968,7 @@ the Random object. This produces mediocre quality random numbers and is ineffici
 If possible, rewrite the code so that the Random object is created once and saved, and each time a new random number
 is required invoke a method on the existing Random object to obtain it.
 </p>
+
 <p>If it is important that the generated Random numbers not be guessable, you <em>must</em> not create a new Random for each random
 number; the values are too easily guessable. You should strongly consider using a java.security.SecureRandom instead
 (and avoid allocating a new SecureRandom for each random number needed).
@@ -6028,6 +6086,7 @@ This comparison is vacuous and possibly incorrect.
 <![CDATA[
 <p> This is an integer bit operation (and, or, or exclusive or) that doesn't do any useful work
 (e.g., <code>v & 0xffffffff</code>).
+
 </p>
 ]]>
     </Details>
@@ -6069,6 +6128,7 @@ Thus, if <code>b[0]</code> contains the value <code>0xff</code>, and
 to get <code>0xffffffff</code>, and thus give the value
 <code>0xffffffff</code> as the result.
 </p>
+
 <p>In particular, the following code for packing a byte array into an int is badly wrong: </p>
 <pre><code>int result = 0;
 for(int i = 0; i &lt; 4; i++) {
@@ -6098,6 +6158,7 @@ Thus, if <code>b[0]</code> contains the value <code>0xff</code>, and
 to get <code>0xffffffff</code>, and thus give the value
 <code>0xffffffff</code> as the result.
 </p>
+
 <p>In particular, the following code for packing a byte array into an int is badly wrong: </p>
 <pre><code>int result = 0;
 for(int i = 0; i &lt; 4; i++)
@@ -6173,9 +6234,11 @@ This may indicate a logic error or typo.</p>
 which will always compare unequal
 due to the specific values of constants C and D.
 This may indicate a logic error or typo.</p>
+
 <p> Typically, this bug occurs because the code wants to perform
 a membership test in a bit set, but uses the bitwise OR
 operator ("|") instead of bitwise AND ("&amp;").</p>
+
 <p>Also such bug may appear in expressions like <code>(e &amp; A | B) == C</code>
 which is parsed like <code>((e &amp; A) | B) == C</code> while <code>(e &amp; (A | B)) == C</code> was intended.</p>
 ]]>
@@ -6350,14 +6413,17 @@ In each iteration, the String is converted to a StringBuffer/StringBuilder,
    appended to, and converted back to a String.
    This can lead to a cost quadratic in the number of iterations,
    as the growing string is recopied in each iteration. </p>
+
 <p>Better performance can be obtained by using
 a StringBuffer (or StringBuilder in Java 1.5) explicitly.</p>
+
 <p> For example:</p>
 <pre><code>// This is bad
 String s = "";
 for (int i = 0; i &lt; field.length; ++i) {
     s = s + field[i];
 }
+
 // This is better
 StringBuffer buf = new StringBuffer();
 for (int i = 0; i &lt; field.length; ++i) {
@@ -6841,6 +6907,7 @@ does not need to be created, just access the static methods directly using the c
     because of the special semantics of <code>NaN</code>, no value
     is equal to <code>Nan</code>, including <code>NaN</code>. Thus,
     <code>x == Double.NaN</code> always evaluates to false.
+
     To check to see if a value contained in <code>x</code>
     is the special Not A Number value, use
     <code>Double.isNaN(x)</code> (or <code>Float.isNaN(x)</code> if
@@ -7068,9 +7135,11 @@ broken:</p>
 <p>The multiplication is done using 32-bit arithmetic, and then converted to a 64-bit value.
 When a 32-bit value is converted to 64-bits and used to express an absolute time
 value, only dates in December 1969 and January 1970 can be represented.</p>
+
 <p>Correct implementations for the above method are:</p>
 <pre><code>// Fails for dates after 2037
 Date getDate(int seconds) { return new Date(seconds * 1000L); }
+
 // better, works for all dates
 Date getDate(long seconds) { return new Date(seconds * 1000); }
 </code></pre>
@@ -7092,6 +7161,7 @@ It is likely that the operation that generated the value to be passed
 to Math.round was intended to be performed using
 floating point arithmetic.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -7111,6 +7181,7 @@ It is likely that the operation that generated the value to be passed
 to Math.ceil was intended to be performed using double precision
 floating point arithmetic.
 </p>
+
 ]]>
     </Details>
   </BugPattern>
@@ -7133,6 +7204,7 @@ double <em>before</em> performing the division.  Here is an example:
 int y = 5;
 // Wrong: yields result 0.0
 double value1 = x / y;
+
 // Right: yields result 0.4
 double value2 = x / (double) y;
 </code></pre>
@@ -7239,6 +7311,7 @@ of values returned from methods and loaded from fields.
 Thus, it may have more precise information that just
 the declared type of a variable, and can use this to determine
 that a cast will always throw an exception at runtime.
+
 </p>
 ]]>
     </Details>
@@ -7424,6 +7497,7 @@ platforms, where the <code>File.separator</code> is a backslash, which is interp
 regular expression as an escape character. Among other options, you can just use
 <code>File.separatorChar=='\\' ? "\\\\" : File.separator</code> instead of
 <code>File.separator</code>
+
 </p>
 ]]>
     </Details>
@@ -7508,6 +7582,7 @@ an array returns the same value as System.identityHashCode, and ignores
 the contents and length of the array. If you need a hashCode that
 depends on the contents of an array <code>a</code>,
 use <code>java.util.Arrays.hashCode(a)</code>.
+
 </p>
 ]]>
     </Details>
@@ -7939,10 +8014,12 @@ and <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997">JDK Bu
         A value specified as carrying a type qualifier annotation is
         compared with a value that doesn't ever carry that qualifier.
         </p>
+
         <p>
         More precisely, a value annotated with a type qualifier specifying when=ALWAYS
         is compared with a value that where the same type qualifier specifies when=NEVER.
         </p>
+
         <p>
         For example, say that @NonNegative is a nickname for
         the type qualifier annotation @Negative(when=When.NEVER).
@@ -7969,10 +8046,12 @@ and <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997">JDK Bu
         consumed in a location or locations requiring that the value not
         carry that annotation.
         </p>
+
         <p>
         More precisely, a value annotated with a type qualifier specifying when=ALWAYS
         is guaranteed to reach a use or uses where the same type qualifier specifies when=NEVER.
         </p>
+
         <p>
         For example, say that @NonNegative is a nickname for
         the type qualifier annotation @Negative(when=When.NEVER).
@@ -7999,11 +8078,13 @@ and <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997">JDK Bu
     The type qualifier is strict, so the tool rejects any values that do not have
     the appropriate annotation.
         </p>
+
         <p>
         To coerce a value to have a strict annotation, define an identity function where the return value is annotated
     with the strict annotation.
     This is the only way to turn a non-annotated value into a value with a strict type qualifier annotation.
         </p>
+
       ]]>
     </Details>
   </BugPattern>
@@ -8017,10 +8098,12 @@ and <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997">JDK Bu
         to be consumed in a location or locations requiring that the value does
         carry that annotation.
         </p>
+
         <p>
         More precisely, a value annotated with a type qualifier specifying when=NEVER
         is guaranteed to reach a use or uses where the same type qualifier specifies when=ALWAYS.
         </p>
+
         <p>
         TODO: example
         </p>
@@ -8097,6 +8180,7 @@ and <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997">JDK Bu
       could work is if on reading the file you plan to open it in random access mode and seek to the byte offset
       where the append started.
       </p>
+
       <p>
       TODO: example.
       </p>
@@ -8114,6 +8198,7 @@ and <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997">JDK Bu
      For example, consider this code from java.awt.Label:</p>
 <pre><code>private static final String base = "label";
 private static int nameCounter = 0;
+
 String constructComponentName() {
     synchronized (getClass()) {
         return base + nameCounter++;
@@ -8124,6 +8209,7 @@ String constructComponentName() {
      Instead, this code should be synchronizing on <code>Label.class</code></p>
 <pre><code>private static final String base = "label";
 private static int nameCounter = 0;
+
 String constructComponentName() {
     synchronized (Label.class) {
         return base + nameCounter++;
@@ -8144,12 +8230,14 @@ String constructComponentName() {
           database object, or other
           resource requiring an explicit cleanup operation.
           </p>
+
           <p>
           In general, if a method opens a stream or other resource,
           the method should use a try/finally block to ensure that
           the stream or resource is cleaned up before the method
           returns.
           </p>
+
           <p>
           This bug pattern is essentially the same as the
           OS_OPEN_STREAM and ODR_OPEN_DATABASE_RESOURCE
@@ -8163,12 +8251,14 @@ String constructComponentName() {
             <li><a href="https://github.com/spotbugs/spotbugs/blob/master/CONTRIBUTING.md">contributing guideline</a></li>
             <li><a href="https://github.com/spotbugs/discuss/issues?q=">malinglist</a></li>
           </ul>
+
           <p>
           In particular,
           the false-positive suppression heuristics for this
           bug pattern have not been extensively tuned, so
           reports about false positives are helpful to us.
           </p>
+
           <p>
           See Weimer and Necula, <i>Finding and Preventing Run-Time Error Handling Mistakes</i>, for
           a description of the analysis technique.
@@ -8190,12 +8280,14 @@ String constructComponentName() {
           database object, or other
           resource requiring an explicit cleanup operation.
           </p>
+
           <p>
           In general, if a method opens a stream or other resource,
           the method should use a try/finally block to ensure that
           the stream or resource is cleaned up before the method
           returns.
           </p>
+
           <p>
           This bug pattern is essentially the same as the
           OS_OPEN_STREAM and ODR_OPEN_DATABASE_RESOURCE
@@ -8209,12 +8301,14 @@ String constructComponentName() {
             <li><a href="https://github.com/spotbugs/spotbugs/blob/master/CONTRIBUTING.md">contributing guideline</a></li>
             <li><a href="https://github.com/spotbugs/discuss/issues?q=">malinglist</a></li>
           </ul>
+
           <p>
           In particular,
           the false-positive suppression heuristics for this
           bug pattern have not been extensively tuned, so
           reports about false positives are helpful to us.
           </p>
+
           <p>
           See Weimer and Necula, <i>Finding and Preventing Run-Time Error Handling Mistakes</i>, for
           a description of the analysis technique.
@@ -8549,7 +8643,7 @@ after the call to initLogging, the logger configuration is lost
       ]]>
     </Details>
   </BugPattern>
-  <BugPattern type="SPEC_LIST_REMOVEORADD_CHECK">
+   <BugPattern type="SPEC_LIST_REMOVEORADD_CHECK">
     <ShortDescription>Remove() or add() called during for loop iteration of list. </ShortDescription>
     <LongDescription>Method {1} is inefficient,because the remove() or add() is not allowed to be called during the for loop iteration of the list.</LongDescription>
     <Details></Details>
@@ -8563,8 +8657,8 @@ after the call to initLogging, the logger configuration is lost
     <ShortDescription>Remove() or put() called during for loop iteration of map. </ShortDescription>
     <LongDescription>Method {1} is inefficient,because the remove() or put() is not allowed to be called during the for loop iteration of the map.</LongDescription>
     <Details></Details>
-  </BugPattern>
-    <BugPattern type="SPEC_SELECTOR_CLOSE">
+  </BugPattern> 
+  <BugPattern type="SPEC_SELECTOR_CLOSE">
     <ShortDescription>Selector closes without socket closure. </ShortDescription>
     <LongDescription>Method {1} closes a selector, but it didn't close the socket registered in selector before.</LongDescription>
     <Details>
@@ -8585,6 +8679,7 @@ after the call to initLogging, the logger configuration is lost
       ]]>
     </Details>
   </BugPattern>
+  
   <BugPattern type="SPEC_ACCESS_NULL_OBJECT">
     <ShortDescription>Access an object is known null. </ShortDescription>
     <LongDescription>Method {1} accesses the object {2} which is known null.</LongDescription>
@@ -8594,7 +8689,7 @@ after the call to initLogging, the logger configuration is lost
       </p>
       ]]>
     </Details>
-  </BugPattern> 
+  </BugPattern>
   <!--
   **********************************************************************
    BugCodes

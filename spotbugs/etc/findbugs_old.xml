@@ -666,15 +666,14 @@
                     reports="SPEC_OBJECT_NO_EQUALS_HASHCODE_LIST,SPEC_OBJECT_NO_EQUALS_HASHCODE_MAP,SPEC_OBJECT_NO_EQUALS_HASHCODE_SET"/>
           <Detector class="edu.umd.cs.findbugs.detect.ArrayIndexOutCheck" speed="fast" disabled="false"
                     reports="SPEC_ARRAY_INDEX_OUT_OF_BOUNDS"/>
-		      <Detector class="edu.umd.cs.findbugs.detect.CollectionIteratorCheck" speed="fast" disabled="false"
+          <Detector class="edu.umd.cs.findbugs.detect.CollectionIteratorCheck" speed="fast" disabled="false"
                     reports="SPEC_LIST_REMOVEORADD_CHECK,SPEC_SET_REMOVEORADD_CHECK,SPEC_MAP_REMOVEORPUT_CHECK"/> 
           <Detector class="edu.umd.cs.findbugs.detect.SelectorCloseDetector" speed="fast" disabled="false"
                     reports="SPEC_SELECTOR_CLOSE"/>
           <Detector class="edu.umd.cs.findbugs.detect.ResourceLeakDetector" speed="fast" disabled="false"
                     reports="SPEC_RESOURCE_LEAK"/>
           <Detector class="edu.umd.cs.findbugs.detect.NullObjectCheck" speed="fast" disabled="false"
-                    reports="SPEC_ACCESS_NULL_OBJECT"/>    
-
+                    reports="SPEC_ACCESS_NULL_OBJECT"/>
             <!-- Bug Categories -->
            <BugCategory category="NOISE" hidden="true"/>
 
@@ -1283,11 +1282,10 @@
           <BugPattern abbrev="SPEC" type="SPEC_OBJECT_NO_EQUALS_HASHCODE_MAP" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_OBJECT_NO_EQUALS_HASHCODE_SET" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_ARRAY_INDEX_OUT_OF_BOUNDS" category="BAD_PRACTICE"/>
-		      <BugPattern abbrev="SPEC" type="SPEC_LIST_REMOVEORADD_CHECK" category="BAD_PRACTICE"/>
+          <BugPattern abbrev="SPEC" type="SPEC_LIST_REMOVEORADD_CHECK" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_SET_REMOVEORADD_CHECK" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_MAP_REMOVEORPUT_CHECK" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_SELECTOR_CLOSE" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_RESOURCE_LEAK" category="BAD_PRACTICE"/>
           <BugPattern abbrev="SPEC" type="SPEC_ACCESS_NULL_OBJECT" category="BAD_PRACTICE"/>
 </FindbugsPlugin>
-
